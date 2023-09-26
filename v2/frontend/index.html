@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Combined Charts</title>
+    <link rel="stylesheet" href="/frontend/style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Combined Charts</h1>
+        <div class="chart-container">
+            <!-- Set the dimensions for the bar chart -->
+            <canvas id="bar-chart" class="chart"></canvas>
+            <!-- Set the dimensions for the pie chart -->
+            <canvas id="pie-chart" class="chart"></canvas>
+        </div>
+    </div>
+    <script src="/frontend/chart.min.js"></script>
+
+    <script>
+        // Function to fetch job data from the API
+        async function fetchJobData() {
+            try {
+                const response = await fetch('http://localhost:3001/api/jobdata');
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                const jobData = await response.json();
+                console.log(jobData);
+                return jobData;
+            } catch (error) {
+                console.error('Error fetching job data:', error);
+                return [];
+            }
+        }
+
+        // Function to create and update the charts
+        async function createCharts() {
+            const jobData = await fetchJobData();
+    
+            // Create the bar chart
+            const barChartCanvas = document.getElementById('bar-chart');
+            new Chart(barChartCanvas, {
+                type: 'bar',
+                data: {
+                    labels: jobData.map(row => row.month),
+                    datasets: [
+                        {
+                            label: 'Joinees',
+                            data: jobData.map(row => row.totalJoinees),
+                            backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                            borderColor: 'rgba(75, 192, 192, 1)',
+                            borderWidth: 2,
+                        },
+                        {
+                            label: 'Offers',
+                            data: jobData.map(row => row.totalOffers),
+                            backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                            borderColor: 'rgba(255, 99, 132, 1)',
+                            borderWidth: 2,
+                        }
+                    ]
+                },
+                options: {
+                    responsive: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+    
+            // Create the pie chart using the same data
+            const pieChartCanvas = document.getElementById('pie-chart');
+            new Chart(pieChartCanvas, {
+                type: 'pie',
+                data: {
+                    labels: jobData.map(row => row.month),
+                    datasets: [{
+                        backgroundColor: ["#e63946", "#254BDD", "#ffbe0b", "#1d3557", "#326998"],
+                        data: jobData.map(row => row.totalJoinees),
+                    }]
+                },
+                options: {
+                    title: {
+                        display: true,
+                        text: 'Pie Chart for Selected Candidates by Job'
+                    },
+                    responsive: false,
+                }
+            });
+        }
+    
+        // Call the createCharts function to initiate chart creation
+        createCharts();
+    </script>
+</body>
+</html>
